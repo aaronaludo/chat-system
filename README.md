@@ -1,4 +1,4 @@
-# Aaron Aludo Chat System
+# Chat System
 
 Full-stack chat playground that ships a FastAPI backend (`chat-system-api`) and a Vite/React frontend (`chat-system-web`). This README focuses on getting both services running locally so you can iterate quickly.
 
