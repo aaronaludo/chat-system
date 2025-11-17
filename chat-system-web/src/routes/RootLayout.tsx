@@ -3,6 +3,8 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 import { applyTheme, getInitialTheme, persistTheme } from '../theme';
 import type { ThemeMode } from '../theme';
+import logo from '../assets/images/logo.png';
+import logoTransparent from '../assets/images/logo-transparent.png';
 
 type NavItem =
   | { type: 'route'; label: string; to: string; end?: boolean }
@@ -38,8 +40,16 @@ const RootLayout = () => {
     <div className="app-frame">
       <header className="site-header">
         <NavLink to="/" className="brand">
-          <span className="brand-mark" aria-hidden="true" />
-          <span>Chat System</span>
+          <span className="brand-logos" aria-hidden="true">
+            <img className="brand-logo brand-logo--solid" src={logo} alt="" loading="lazy" />
+            <img
+              className="brand-logo brand-logo--transparent"
+              src={logoTransparent}
+              alt=""
+              loading="lazy"
+            />
+          </span>
+          <span className="brand-name">Chat System</span>
         </NavLink>
         <nav className="nav-links">
           {navItems.map((item) =>
@@ -86,11 +96,11 @@ const RootLayout = () => {
       <footer className="site-footer">
         <p>© {new Date().getFullYear()}. All rights reserved.</p>
         <div className="footer-links">
-          <a href="https://github.com/" target="_blank" rel="noreferrer">
+          <a href="https://github.com/aaronaludo/chat-system/" target="_blank" rel="noreferrer">
             GitHub
           </a>
-          <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noreferrer">
-            Powered by FastAPI
+          <a href="https://www.linkedin.com/in/aaronaludo/" target="_blank" rel="noreferrer">
+            Aaron Aludo
           </a>
         </div>
       </footer>
