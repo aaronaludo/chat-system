@@ -4,12 +4,6 @@ import MessageBubble from '../components/MessageBubble';
 import { useChatSession } from '../hooks/useChatSession';
 import { useQuickAccount } from '../hooks/useQuickAccount';
 
-const metrics = [
-  { label: 'Context window', value: '32k tokens' },
-  { label: 'Guardrails', value: 'Active' },
-  { label: 'Eval scenarios', value: '37 scripts' },
-];
-
 const normalizeSessionName = (value: string) =>
   value
     .toLowerCase()
@@ -155,26 +149,10 @@ const ChatPage = () => {
           )}
         </div>
 
-        <p className="eyebrow">Prototype lab</p>
-        <h2>Create a calm, focused environment for exploring assistant behaviors.</h2>
-        <p className="muted-copy">
-          Each session stores the full conversation, enabling you to retry prompts, export transcripts, or invite a
-          teammate to pick up where you left off.
-        </p>
-
-        <div className="metric-grid">
-          {metrics.map((metric) => (
-            <article key={metric.label} className="metric-card">
-              <p>{metric.label}</p>
-              <strong>{metric.value}</strong>
-            </article>
-          ))}
-        </div>
-
         <div className="session-card">
           <div>
             <p className="eyebrow">Session ID</p>
-            <h4>{sessionId ? sessionId.slice(0, 8).toUpperCase() : 'Generating…'}</h4>
+            <h4>{sessionId ? sessionId.toUpperCase() : 'Generating…'}</h4>
             <p className="muted-copy">Host: {accountDisplayName}</p>
           </div>
           <div className="session-actions">

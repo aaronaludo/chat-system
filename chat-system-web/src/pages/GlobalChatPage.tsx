@@ -6,21 +6,6 @@ import { useQuickAccount } from '../hooks/useQuickAccount';
 
 const GLOBAL_SESSION_ID = 'global-lobby';
 
-const guideposts = [
-  {
-    title: 'Stay respectful',
-    detail: 'Treat every participant the way you want your product feedback to feel—kind, clear, and constructive.',
-  },
-  {
-    title: 'Share context',
-    detail: 'Let others know what prompt or experiment you are trying so they can riff with you in real time.',
-  },
-  {
-    title: 'Keep it safe',
-    detail: 'Avoid pasting secrets or private data. This lobby is shared with anyone exploring the playground.',
-  },
-];
-
 const GlobalChatPage = () => {
   const { messages, isLoading, isSending, error, connectionState, sendUserMessage } = useChatSession({
     initialSessionId: GLOBAL_SESSION_ID,
@@ -99,15 +84,6 @@ const GlobalChatPage = () => {
             <strong>Public</strong>
           </article>
         </div>
-
-        <ul className="rules-list">
-          {guideposts.map((item) => (
-            <li key={item.title} className="rules-card">
-              <strong>{item.title}</strong>
-              <p>{item.detail}</p>
-            </li>
-          ))}
-        </ul>
 
         <div className="account-card">
           {isAccountReady ? (
