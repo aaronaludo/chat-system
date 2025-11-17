@@ -35,7 +35,6 @@ Create a `.env` next to `docker-compose.yml` if you need to override defaults:
 | `DATABASE_URL` | `postgresql+psycopg2://chatsystem_user:chatsystem_password@db:5432/chatsystem_db` | SQLAlchemy connection string used by the API. |
 | `REDIS_URL` | `redis://redis:6379/0` | Chat session cache. |
 | `CHAT_SESSION_TTL_SECONDS` | `86400` | Time-to-live for cached sessions. |
-| `GEMINI_API_KEY` | _unset_ | Reserved for future AI integrations. |
 
 ### 3. (Alternative) Run the API without Docker
 ```bash

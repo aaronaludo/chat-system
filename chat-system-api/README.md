@@ -24,7 +24,6 @@ The application relies on the following environment variables (see `.env` if you
 | `DATABASE_URL` | ✅ | SQLAlchemy/PostgreSQL connection string. |
 | `REDIS_URL` | ❌ (defaults to `redis://localhost:6379/0`) | Chat session cache. |
 | `CHAT_SESSION_TTL_SECONDS` | ❌ (defaults to 86400 seconds) | Expiration for chat sessions stored in Redis. |
-| `GEMINI_API_KEY` | ❌ | Reserved for future AI integrations. |
 
 ## Chat endpoints
 
