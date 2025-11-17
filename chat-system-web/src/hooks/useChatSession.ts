@@ -4,6 +4,7 @@ import type { ChatStreamEvent } from '../api/chatClientApis';
 import {
   appendMessage,
   clearChatHistory,
+  createChatContextState,
   loadSession,
   resetMessages,
   sendChatMessage,
@@ -16,11 +17,13 @@ import type { AppDispatch } from '../store';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 
 const DEFAULT_SESSION_STORAGE_KEY = 'chatsystem.session-id';
+const FALLBACK_SCOPE_STATE = createChatContextState();
 
 export interface UseChatSessionOptions {
   initialSessionId?: string;
   persist?: boolean;
   storageKey?: string;
+  scope?: string;
 }
 
 const createSessionId = (): string => {
@@ -44,20 +47,20 @@ const persistSessionId = (storageKey: string, sessionId: string) => {
   window.localStorage.setItem(storageKey, sessionId);
 };
 
-const createEventHandler = (dispatch: AppDispatch) => (event: ChatStreamEvent) => {
+const createEventHandler = (dispatch: AppDispatch, scope: string) => (event: ChatStreamEvent) => {
   switch (event.type) {
     case 'session.sync':
-      dispatch(syncMessages(event.session.messages));
-      dispatch(setError(null));
+      dispatch(syncMessages({ scope, messages: event.session.messages }));
+      dispatch(setError({ scope, error: null }));
       break;
     case 'message.created':
-      dispatch(appendMessage(event.message));
+      dispatch(appendMessage({ scope, message: event.message }));
       break;
     case 'session.cleared':
-      dispatch(resetMessages());
+      dispatch(resetMessages({ scope }));
       break;
     case 'error':
-      dispatch(setError(event.detail));
+      dispatch(setError({ scope, error: event.detail }));
       break;
     default:
       break;
@@ -65,9 +68,13 @@ const createEventHandler = (dispatch: AppDispatch) => (event: ChatStreamEvent) =
 };
 
 export const useChatSession = (options?: UseChatSessionOptions) => {
-  const { initialSessionId, persist = true, storageKey = DEFAULT_SESSION_STORAGE_KEY } = options ?? {};
+  const { initialSessionId, persist = true, storageKey, scope = 'default' } = options ?? {};
+  const resolvedStorageKey =
+    storageKey ?? (scope === 'default' ? DEFAULT_SESSION_STORAGE_KEY : `${DEFAULT_SESSION_STORAGE_KEY}.${scope}`);
   const dispatch = useAppDispatch();
-  const { sessionId, messages, isLoading, isSending, error, connectionState } = useAppSelector((state) => state.chat);
+  const { sessionId, messages, isLoading, isSending, error, connectionState } = useAppSelector(
+    (state) => state.chat.contexts[scope] ?? FALLBACK_SCOPE_STATE,
+  );
 
   useEffect(() => {
     if (!initialSessionId) {
@@ -76,75 +83,81 @@ export const useChatSession = (options?: UseChatSessionOptions) => {
     if (sessionId === initialSessionId) {
       return;
     }
-    dispatch(setSessionId(initialSessionId));
-  }, [dispatch, initialSessionId, sessionId]);
+    dispatch(resetMessages({ scope }));
+    dispatch(setError({ scope, error: null }));
+    dispatch(setConnectionState({ scope, connectionState: 'idle' }));
+    dispatch(setSessionId({ scope, sessionId: initialSessionId }));
+    if (persist) {
+      persistSessionId(resolvedStorageKey, initialSessionId);
+    }
+  }, [dispatch, initialSessionId, persist, resolvedStorageKey, scope, sessionId]);
 
   useEffect(() => {
     if (sessionId || initialSessionId) {
       if (!initialSessionId && sessionId && persist) {
-        persistSessionId(storageKey, sessionId);
+        persistSessionId(resolvedStorageKey, sessionId);
       }
       return;
     }
-    let nextSessionId = persist ? getStoredSessionId(storageKey) : '';
+    let nextSessionId = persist ? getStoredSessionId(resolvedStorageKey) : '';
     if (!nextSessionId) {
       nextSessionId = createSessionId();
     }
-    dispatch(setSessionId(nextSessionId));
+    dispatch(setSessionId({ scope, sessionId: nextSessionId }));
     if (persist) {
-      persistSessionId(storageKey, nextSessionId);
+      persistSessionId(resolvedStorageKey, nextSessionId);
     }
-  }, [dispatch, initialSessionId, persist, sessionId, storageKey]);
+  }, [dispatch, initialSessionId, persist, resolvedStorageKey, scope, sessionId]);
 
   useEffect(() => {
     if (!sessionId) {
       return;
     }
 
-    dispatch(loadSession(sessionId));
+    dispatch(loadSession({ scope, sessionId }));
 
     const disconnect = subscribeToSession(
       sessionId,
-      createEventHandler(dispatch),
-      (state) => dispatch(setConnectionState(state)),
+      createEventHandler(dispatch, scope),
+      (state) => dispatch(setConnectionState({ scope, connectionState: state })),
     );
 
     return () => {
       disconnect();
     };
-  }, [dispatch, sessionId]);
+  }, [dispatch, scope, sessionId]);
 
   const sendUserMessage = useCallback(
     async (content: string, authorName?: string) => {
       if (!sessionId) {
         return;
       }
-      await dispatch(sendChatMessage({ sessionId, content, authorName })).unwrap();
+      await dispatch(sendChatMessage({ scope, sessionId, content, authorName })).unwrap();
     },
-    [dispatch, sessionId],
+    [dispatch, scope, sessionId],
   );
 
   const clearConversation = useCallback(async () => {
     if (!sessionId) {
       return;
     }
-    await dispatch(clearChatHistory(sessionId)).unwrap();
-  }, [dispatch, sessionId]);
+    await dispatch(clearChatHistory({ scope, sessionId })).unwrap();
+  }, [dispatch, scope, sessionId]);
 
   const activateSession = useCallback(
     (nextId: string) => {
       if (!nextId || nextId === sessionId) {
         return;
       }
-      dispatch(resetMessages());
-      dispatch(setError(null));
-      dispatch(setConnectionState('idle'));
-      dispatch(setSessionId(nextId));
+      dispatch(resetMessages({ scope }));
+      dispatch(setError({ scope, error: null }));
+      dispatch(setConnectionState({ scope, connectionState: 'idle' }));
+      dispatch(setSessionId({ scope, sessionId: nextId }));
       if (persist) {
-        persistSessionId(storageKey, nextId);
+        persistSessionId(resolvedStorageKey, nextId);
       }
     },
-    [dispatch, persist, sessionId, storageKey],
+    [dispatch, persist, resolvedStorageKey, scope, sessionId],
   );
 
   const startNewSession = useCallback(

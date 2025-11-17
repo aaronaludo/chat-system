@@ -10,6 +10,7 @@ const GlobalChatPage = () => {
   const { messages, isLoading, isSending, error, connectionState, sendUserMessage } = useChatSession({
     initialSessionId: GLOBAL_SESSION_ID,
     persist: false,
+    scope: 'global',
   });
   const { accountName, isAccountReady, accountDisplayName, saveAccountName, resetAccountName } = useQuickAccount();
   const [nameDraft, setNameDraft] = useState(accountName);
