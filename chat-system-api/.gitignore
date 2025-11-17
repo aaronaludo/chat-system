@@ -1,0 +1,5 @@
+# API environment file
+.env
+
+# API chat logs
+logs/chat.log
